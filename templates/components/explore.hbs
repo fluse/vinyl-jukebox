@@ -1,0 +1,14 @@
+<section id="explore" class="grd-1">
+    <ul class="cover-list card-flip grd-\{{settings.coversInARow}}-each" v-bind:class="{'selected': coverList.selectedCover !== null}">
+        <li v-for="list in playlist.list" class="card" v-bind:class="{ 'selected': coverList.selectedCover === $index}" v-on:click="getPlaylist(list.id)">
+
+            <div class="front cover" v-on:click="selectList($index);">
+                <h2>
+                    <strong class="cut">\{{list.name}}</strong>
+                </h2>
+                <img :src="list.images[0].url"/>
+            </div>
+
+        </li>
+    </ul>
+</section>

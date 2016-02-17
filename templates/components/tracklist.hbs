@@ -1,0 +1,25 @@
+<section class="track-list" v-show="coverList.activeCover !== null">
+    <div class="inner">
+        <div class="panel">
+            <div class="row head">
+                <h3 class="grd-3-2">\{{playlist.current.name}}</h3>
+                <h3 class="grd-3-1 txt-rgt">\{{playlist.current.tracks.total}} Songs</h3>
+            </div>
+            <div class="row info">
+                <h3 class="grd-2">Song</h3>
+                <h3 class="grd-2">Artist</h3>
+            </div>
+        </div>
+        <ul id="trackList" class="list">
+            <li v-for="list in playlist.current.tracks.items" v-on:click.stop.prevent="addToQueue(list.track)" v-bind:class="{'selected': trackList.selectedTrack === $index}">
+                <h3 class="grd-2 cut">
+                    \{{list.track.name}}
+                </h3>
+                <h3 class="grd-2 cut">
+                    \{{list.track.album.name}}
+                </h3>
+            </li>
+        </ul>
+        <div class="background" style="background-image: url(\{{playlist.current.images[0].url}})">
+    </div>
+</section>

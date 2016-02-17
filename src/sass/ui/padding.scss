@@ -1,0 +1,28 @@
+.pdg-5 {
+    padding-right: .5em;
+}
+
+.pdg-5-rgt {
+    padding-right: .5rem;
+}
+
+.pdg-5-lft {
+    padding-left: .5rem;
+}
+
+.pdg-6-vrt {
+    padding-left: .6em;
+    padding-right: .6em;
+}
+
+.pdg-20-vrt {
+    padding: 0 2rem;
+}
+
+.pdg-30-btm {
+    padding-bottom: 1.5em;
+
+    @include MQ(M) {
+        padding-bottom: 3rem;
+    }
+}

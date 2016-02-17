@@ -17,7 +17,7 @@
     <![endif]-->
 
 </head>
-    <main id="page" role="main">
+    <main id="page" role="main"  v-bind:class="{'no-gamepad': !gamepad.isRunning,'gamepad-active': gamepad.isRunning}">
         {{{body}}}
     </main>
 

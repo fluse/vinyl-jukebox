@@ -1,0 +1,31 @@
+.card-flip {
+
+}
+
+.card {
+    perspective: 1000;
+    position: relative;
+    cursor: pointer;
+    transition: transform .4s;
+    transform-style: preserve-3d;
+}
+
+.card.active {
+    transform: rotateY( 180deg ) ;
+    z-index: 10;
+}
+
+.card .front,
+.card .back {
+    top: 0;
+    left: 0;
+    display: block;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    backface-visibility: hidden;
+}
+
+.card .back {
+    transform: rotateY( -180deg );
+}
