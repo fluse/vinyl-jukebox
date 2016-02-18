@@ -20,6 +20,8 @@ node -v foo >/dev/null 2>&1 || {
 
 mongodb -v foo >/dev/null 2>&1 || {
     brew install mongodb
+    sudo mkdir -p /data/db
+    sudo chown -R $(whoami) /data/
 }
 
 npm install -g grunt
