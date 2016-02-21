@@ -1,0 +1,38 @@
+#dashboard {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: $color-background;
+    z-index: 15;
+
+}
+
+#currentSong {
+    position: relative;
+    padding: 8em;
+
+    .vinyl {
+        top: 8em;
+        right: 8em;
+        position: absolute;
+        left: auto;
+        z-index: -1;
+    }
+    
+    img {
+        width: 60%;
+        height: auto;
+    }
+
+    .placeholder {
+        visibility: hidden;
+    }
+
+    .cover {
+        position: absolute;
+        top: 8em;
+        left: 2em;
+    }
+}

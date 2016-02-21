@@ -69,14 +69,15 @@ module.exports = function (eventList) {
 
         getPressedButtons () {
             var buttons = navigator.getGamepads()[0].buttons;
+            var controller = navigator.getGamepads()[0].id;
 
             for (var i = 0; i < buttons.length; i++) {
 
                 if (buttons[i].pressed) {
                     if (lastStates.buttons[i] !== true) {
-                        console.log(mapping.buttons[i]);
-                        if (eventList.hasOwnProperty(mapping.buttons[i])) {
-                            eventList[mapping.buttons[i]]();
+                        console.log(mapping[controller].buttons[i]);
+                        if (eventList.hasOwnProperty(mapping[controller].buttons[i])) {
+                            eventList[mapping[controller].buttons[i]]();
                         }
                         lastStates.buttons[i] = true;
                     }

@@ -9,6 +9,8 @@ module.exports = function () {
         socket: socket,
         gamepad: null,
         userIsLoggedIn: false,
+        getPlayedSong: {},
+        playState: {},
         playlist: {
             list: [],
             current: [],

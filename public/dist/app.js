@@ -15551,7 +15551,7 @@ WS.prototype.check = function(){
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../transport":38,"component-inherit":46,"debug":32,"engine.io-parser":47,"parseqs":58,"ws":80,"yeast":59}],44:[function(require,module,exports){
+},{"../transport":38,"component-inherit":46,"debug":32,"engine.io-parser":47,"parseqs":58,"ws":81,"yeast":59}],44:[function(require,module,exports){
 // browser shim for xmlhttprequest module
 var hasCORS = require('has-cors');
 
@@ -28283,7 +28283,7 @@ if (devtools) {
 
 module.exports = Vue;
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"_process":81}],72:[function(require,module,exports){
+},{"_process":82}],72:[function(require,module,exports){
 'use strict';
 
 /* globals request */
@@ -28299,7 +28299,7 @@ if (controller.hasOwnProperty(request.controller)) {
     console.info('no page controller defined');
 }
 
-},{"./page/juke/controller.js":78}],73:[function(require,module,exports){
+},{"./page/juke/controller.js":79}],73:[function(require,module,exports){
 'use strict';
 
 var mapping = require('./mapping.js');
@@ -28364,14 +28364,15 @@ module.exports = function (eventList) {
         },
         getPressedButtons: function getPressedButtons() {
             var buttons = navigator.getGamepads()[0].buttons;
+            var controller = navigator.getGamepads()[0].id;
 
             for (var i = 0; i < buttons.length; i++) {
 
                 if (buttons[i].pressed) {
                     if (lastStates.buttons[i] !== true) {
-                        console.log(mapping.buttons[i]);
-                        if (eventList.hasOwnProperty(mapping.buttons[i])) {
-                            eventList[mapping.buttons[i]]();
+                        console.log(mapping[controller].buttons[i]);
+                        if (eventList.hasOwnProperty(mapping[controller].buttons[i])) {
+                            eventList[mapping[controller].buttons[i]]();
                         }
                         lastStates.buttons[i] = true;
                     }
@@ -28434,10 +28435,59 @@ module.exports = {
         positive: 'down'
     }],
 
-    buttons: ['back', 'option', 'select', 'secondary', 'shoulderLeftOne', 'shoulderRightOne']
+    'USB Gamepad  (Vendor: 0079 Product: 0011)': {
+        buttons: ['back', 'option', 'select', 'secondary', 'shoulderLeftOne', 'shoulderRightOne']
+    },
+
+    'Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 05c4)': {
+        buttons: ['select', 'secondary', 'back', 'option', 'shoulderLeftOne', 'shoulderRightOne']
+    }
 };
 
 },{}],76:[function(require,module,exports){
+"use strict";
+
+module.exports = {
+    data: {
+        dialog: {
+            addToQueue: {
+                show: false,
+                callback: function callback() {}
+            }
+        }
+    },
+    ready: function ready() {},
+
+    methods: {
+        isDialogOpen: function isDialogOpen() {
+            for (var name in this.dialog) {
+                if (this.dialog[name].show) {
+                    return true;
+                }
+            }
+        },
+        dialogShow: function dialogShow(name, cb) {
+            this.dialog[name].show = true;
+            this.navigation.dialogPos = 0;
+            this.dialog[name].callback = cb;
+        },
+        dialogHide: function dialogHide() {
+            for (var name in this.dialog) {
+                this.dialog[name].show = false;
+            }
+            this.navigation.dialogPos = -1;
+        },
+        dialogConfirm: function dialogConfirm(name) {
+            this.dialog[name].callback();
+            this.dialogHide(name);
+        },
+        dialogCancle: function dialogCancle(name) {
+            this.dialogHide(name);
+        }
+    }
+};
+
+},{}],77:[function(require,module,exports){
 'use strict';
 
 var Vue = require('vue');
@@ -28446,14 +28496,23 @@ var jQuery = require('jquery');
 var Gamepad = require('./../components/gamepad/');
 
 module.exports = {
+    data: {
+        navigation: {
+            coverPos: 0,
+            trackPos: -1,
+            dialogPos: -1,
+            isDashboardVisible: 0
+        }
+    },
     ready: function ready() {
         this.gamepad = new Gamepad({
-            right: this.selectSpecificCover.bind(this, 1),
-            left: this.selectSpecificCover.bind(this, -1),
-            up: this.selectSpecificCover.bind(this, -this.settings.coversInARow),
-            down: this.selectSpecificCover.bind(this, this.settings.coversInARow),
+            right: this.navigateTo.bind(this, 1),
+            left: this.navigateTo.bind(this, -1),
+            up: this.navigateTo.bind(this, -this.settings.coversInARow),
+            down: this.navigateTo.bind(this, this.settings.coversInARow),
             select: this.selectElement.bind(this),
             back: this.deselectElement.bind(this),
+            option: this.toggleDashboard.bind(this),
             shoulderRightOne: this.selectNext.bind(this),
             shoulderLeftOne: this.selectPrev.bind(this)
         });
@@ -28472,60 +28531,130 @@ module.exports = {
         _scrollToSelectedTrack: function _scrollToSelectedTrack() {
             Vue.nextTick(function () {
                 var el = jQuery('#trackList .selected');
-                var topPos = el.offset().top - jQuery('#trackList').height / 2 + el.outerHeight(true);
+                if (el.length === 0) {
+                    return false;
+                }
+                var topPos = el.position().top - jQuery('#trackList').outerHeight() / 2 + el.outerHeight(true);
+                console.log(topPos);
                 jQuery('#trackList').stop().animate({
                     scrollTop: topPos
                 }, 300);
             });
         },
+        toggleDashboard: function toggleDashboard() {
+            this.navigation.isDashboardVisible = !this.navigation.isDashboardVisible;
+        },
         selectList: function selectList(index) {
             this.coverList.activeCover = index;
         },
-        selectSpecificCover: function selectSpecificCover(count) {
-
-            if (this.coverList.activeCover !== null) {
-                count > 0 ? this.trackList.selectedTrack++ : this.trackList.selectedTrack--;
-                console.log(this.trackList.selectedTrack);
-                this._scrollToSelectedTrack();
-                return;
+        navigateTo: function navigateTo(pos) {
+            if (this.navigation.dialogPos >= 0) {
+                return this.navigateToDialogButton(pos);
             }
 
-            var nextPos = this.coverList.selectedCover + count;
+            this.navigation.isDashboardVisible = false;
+
+            // if a cover is selected navigate tracks
+            if (this.coverList.activeCover !== null) {
+                return this.navigateToTrack(pos);
+            }
+
+            return this.navigateToCover(pos);
+        },
+        navigateToTrack: function navigateToTrack(pos) {
+
+            // only if list is loaded
+            if (this.playlist.current === null) {
+                return false;
+            }
+
+            // normalize to only one step
+            pos = pos > 0 ? 1 : -1;
+            // calculate
+            var nextPos = this.navigation.trackPos + pos;
+            // check bounds
+            if (nextPos > -1 && nextPos < this.playlist.current.tracks.items.length) {
+                this.navigation.trackPos = nextPos;
+            }
+            // do scrolling
+            this._scrollToSelectedTrack();
+        },
+        navigateToCover: function navigateToCover(pos) {
+            var nextPos = this.navigation.coverPos + pos;
             if (nextPos > -1 && nextPos < this.playlist.list.length) {
-                this.coverList.selectedCover = nextPos;
+                this.navigation.coverPos = nextPos;
             }
             this._scrollToSelectedCover();
         },
-        selectElement: function selectElement() {
-            if (this.coverList.activeCover === null) {
-                this.coverList.selectedCover = jQuery('.cover-list .selected').index();
-                this.getPlaylist(this.playlist.list[this.coverList.selectedCover].id);
-                this.selectList(this.coverList.selectedCover);
+        navigateToDialogButton: function navigateToDialogButton(pos) {
+            // normalize to only one step
+            pos = pos > 0 ? 1 : -1;
+
+            var nextPos = this.navigation.dialogPos + pos;
+            // check bounds
+            console.log(nextPos);
+            if (nextPos > -1 && nextPos < 2) {
+                this.navigation.dialogPos = nextPos;
             }
         },
-        selectNext: function selectNext() {
+        selectElement: function selectElement() {
+            if (this.navigation.dialogPos >= 0) {
+                return this.dialogConfirm('addToQueue');
+            }
+
             if (this.coverList.activeCover !== null) {
-                this.coverList.selectedCover++;
-                this.getPlaylist(this.playlist.list[this.coverList.selectedCover].id);
-                this.selectList(this.coverList.selectedCover);
+                var track = this.getTrackByPosition(this.navigation.trackPos);
+                this.dialogShow('addToQueue', this.addToQueue.bind(this, track));
+                return;
+            }
+            this.navigation.trackPos = 0;
+            this._scrollToSelectedTrack();
+            this.navigation.coverPos = jQuery('.cover-list .selected').index();
+
+            this.getPlaylist(this.playlist.list[this.navigation.coverPos].id);
+
+            this.selectList(this.navigation.coverPos);
+        },
+        selectNext: function selectNext() {
+
+            if (this.coverList.activeCover !== null) {
+                this.navigation.trackPos = 0;
+                this._scrollToSelectedTrack();
+                this.navigation.coverPos++;
+
+                this.getPlaylist(this.playlist.list[this.navigation.coverPos].id);
+
+                this.selectList(this.navigation.coverPos);
                 this._scrollToSelectedCover();
             }
         },
         selectPrev: function selectPrev() {
             if (this.coverList.activeCover !== null) {
-                this.coverList.selectedCover--;
-                this.getPlaylist(this.playlist.list[this.coverList.selectedCover].id);
-                this.selectList(this.coverList.selectedCover);
+                this.navigation.trackPos = 0;
+                this._scrollToSelectedTrack();
+                this.navigation.coverPos--;
+
+                this.getPlaylist(this.playlist.list[this.navigation.coverPos].id);
+
+                this.selectList(this.navigation.coverPos);
                 this._scrollToSelectedCover();
             }
         },
         deselectElement: function deselectElement() {
+
+            if (this.isDialogOpen()) {
+                return this.dialogHide();
+            }
+
             this.coverList.activeCover = null;
+            this.trackList.selectedTrack = 0;
+            this.navigation.trackPos = -1;
+            this.playlist.current = null;
         }
     }
 };
 
-},{"./../components/gamepad/":74,"jquery":2,"vue":71}],77:[function(require,module,exports){
+},{"./../components/gamepad/":74,"jquery":2,"vue":71}],78:[function(require,module,exports){
 "use strict";
 
 module.exports = {
@@ -28541,7 +28670,7 @@ module.exports = {
     }
 };
 
-},{}],78:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 'use strict';
 
 /* dependencies */
@@ -28553,6 +28682,7 @@ var Ps = require('perfect-scrollbar');
 
 var Navigation = require('./../../mixin/navigation.js');
 var Offline = require('./../../mixin/offline.js');
+var Dialog = require('./../../mixin/dialog.js');
 
 module.exports = function () {
 
@@ -28560,7 +28690,7 @@ module.exports = function () {
 
     return new Vue({
         el: '#page',
-        mixins: [Navigation, Offline],
+        mixins: [Navigation, Offline, Dialog],
         data: data,
         ready: function ready() {
             var _this = this;
@@ -28570,11 +28700,14 @@ module.exports = function () {
             Ps.initialize(jQuery('#trackList')[0]);
 
             this.socket.on('getQueue', function (queue) {
-                _this.queue = queue;
+                console.log(queue);
+                _this.socket.emit('getPlayedSong');
+                _this.playlist.queue = queue;
             });
             this.socket.on('getPlaylists', function (playlistsArray) {
                 console.log(playlistsArray);
                 _this.playlist.list = playlistsArray;
+                _this.socket.emit('getPlayedSong');
                 _this.gamepad.start();
             });
             this.socket.on('getPlaylist', function (currentPlaylist) {
@@ -28587,8 +28720,17 @@ module.exports = function () {
             this.socket.on('userIsLoggedIn', function (userIsLoggedIn) {
                 _this.userIsLoggedIn = userIsLoggedIn;
             });
+            this.socket.on('getPlayedSong', function (getPlayedSong) {
+                console.log(getPlayedSong);
+                _this.getPlayedSong = getPlayedSong;
+            });
+            this.socket.on('playState', function (playState) {
+                console.log(playState);
+                _this.playState = playState;
+            });
             if (this.userIsLoggedIn) {
                 this.socket.emit('getPlaylists');
+                this.socket.emit('getPlayedSong');
                 this.socket.emit('getQueue');
             }
         },
@@ -28605,7 +28747,11 @@ module.exports = function () {
                 this.socket.emit('next');
             },
             addToQueue: function addToQueue(track) {
+                console.log(track);
                 this.socket.emit('addToQueue', track);
+            },
+            getTrackByPosition: function getTrackByPosition(pos) {
+                return this.playlist.current.tracks.items[pos].track;
             },
             playTrack: function playTrack(trackId) {
                 this.socket.emit('playTrack', trackId);
@@ -28619,7 +28765,7 @@ module.exports = function () {
     });
 };
 
-},{"./../../mixin/navigation.js":76,"./../../mixin/offline.js":77,"./data.js":79,"jquery":2,"perfect-scrollbar":3,"vue":71}],79:[function(require,module,exports){
+},{"./../../mixin/dialog.js":76,"./../../mixin/navigation.js":77,"./../../mixin/offline.js":78,"./data.js":80,"jquery":2,"perfect-scrollbar":3,"vue":71}],80:[function(require,module,exports){
 'use strict';
 
 /* globals response */
@@ -28633,6 +28779,8 @@ module.exports = function () {
         socket: socket,
         gamepad: null,
         userIsLoggedIn: false,
+        getPlayedSong: {},
+        playState: {},
         playlist: {
             list: [],
             current: [],
@@ -28652,9 +28800,9 @@ module.exports = function () {
     }, response);
 };
 
-},{"extend":1,"socket.io-client":24}],80:[function(require,module,exports){
+},{"extend":1,"socket.io-client":24}],81:[function(require,module,exports){
 
-},{}],81:[function(require,module,exports){
+},{}],82:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};

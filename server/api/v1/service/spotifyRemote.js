@@ -37,6 +37,15 @@ module.exports = (app) => {
             });
         },
 
+        getState(cb) {
+            spotify.getState((err, state) => {
+                if (state !== undefined) {
+                    state.position = this._formatTime(state.position);
+                }
+                cb(state);
+            });
+        },
+
         getTrackLength(cb) {
             spotify.getTrack((err, state) => {
                 if (err) {

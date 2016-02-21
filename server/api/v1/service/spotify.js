@@ -47,14 +47,14 @@ module.exports = (app) => {
             });
         },
 
-        refreshToken() {
-            setInterval(() => {
-                spotify.refreshAccessToken().then(function(data) {
-                    console.log('The access token has been refreshed!');
-                }, function(err) {
-                    console.log('Could not refresh access token', err);
-                });
-            }, 1000 * 60 * 40);
+        refreshToken(cb) {
+            spotify.refreshAccessToken().then(function(data) {
+                console.log('The access token has been refreshed!');
+                cb();
+            }, function(err) {
+                console.log('Could not refresh access token', err);
+                cb();
+            });
         },
 
         getAccessToken() {
@@ -111,6 +111,15 @@ module.exports = (app) => {
                 cb(data);
             }, function(err) {
 
+                cb([]);
+                console.log('Something went wrong!', err);
+            });
+        },
+
+        getTracks(trackId, cb) {
+            spotify.getTracks([trackId]).then(function(data) {
+                cb(data.body.tracks[0]);
+            }, function(err) {
                 cb([]);
                 console.log('Something went wrong!', err);
             });

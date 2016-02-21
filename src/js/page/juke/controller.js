@@ -7,6 +7,7 @@ var Ps = require('perfect-scrollbar');
 
 var Navigation = require('./../../mixin/navigation.js');
 var Offline = require('./../../mixin/offline.js');
+var Dialog = require('./../../mixin/dialog.js');
 
 module.exports = function () {
 
@@ -14,7 +15,7 @@ module.exports = function () {
 
     return new Vue({
         el: '#page',
-        mixins: [Navigation, Offline],
+        mixins: [Navigation, Offline, Dialog],
         data: data,
         ready () {
             // custom scrollbar
@@ -22,11 +23,14 @@ module.exports = function () {
             Ps.initialize(jQuery('#trackList')[0]);
 
             this.socket.on('getQueue', (queue) => {
-                this.queue = queue;
+                console.log(queue);
+                this.socket.emit('getPlayedSong');
+                this.playlist.queue = queue;
             });
             this.socket.on('getPlaylists', (playlistsArray) => {
                 console.log(playlistsArray);
                 this.playlist.list = playlistsArray;
+                this.socket.emit('getPlayedSong');
                 this.gamepad.start();
             });
             this.socket.on('getPlaylist', (currentPlaylist) => {
@@ -39,8 +43,17 @@ module.exports = function () {
             this.socket.on('userIsLoggedIn', (userIsLoggedIn) => {
                 this.userIsLoggedIn = userIsLoggedIn;
             });
+            this.socket.on('getPlayedSong', (getPlayedSong) => {
+                console.log(getPlayedSong);
+                this.getPlayedSong = getPlayedSong;
+            });
+            this.socket.on('playState', (playState) => {
+                console.log(playState);
+                this.playState = playState;
+            });
             if (this.userIsLoggedIn) {
                 this.socket.emit('getPlaylists');
+                this.socket.emit('getPlayedSong');
                 this.socket.emit('getQueue');
             }
         },
@@ -57,7 +70,11 @@ module.exports = function () {
                 this.socket.emit('next');
             },
             addToQueue (track) {
+                console.log(track);
                 this.socket.emit('addToQueue', track);
+            },
+            getTrackByPosition (pos) {
+                return this.playlist.current.tracks.items[pos].track;
             },
             playTrack (trackId) {
                 this.socket.emit('playTrack', trackId);

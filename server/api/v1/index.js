@@ -1,10 +1,22 @@
-var glob = require('glob'),
-    path = require('path');
+var mongoose = require('mongoose'),
+    glob = require('glob'),
+    path = require('path'),
+    requireAll = require('require-all');
 
 // export complete api
 module.exports = (app) => {
 
+    // connect to db
+    mongoose.connect(app.config.database.url, (err) => {
+        if (err) {
+            console.log('ERROR connecting to: %s. %s', app.config.database.url, err);
+        } else {
+            console.log('Succeeded connected to: %s \n\n', app.config.database.url);
+        }
+    });
+
     app.api = {
+        model: requireAll(__dirname + '/model'),
         service: {}
     };
 

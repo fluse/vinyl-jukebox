@@ -1,0 +1,23 @@
+<section id="dashboard" v-show="navigation.isDashboardVisible">
+    <span v-on:click="play">play</span>
+    <span v-on:click="pause">pause</span>
+    <span v-on:click="next">next</span>
+
+    <div id="currentSong" class="grd-2">
+        <img :src="getPlayedSong.track.album.images[0].url" class="placeholder" />
+        <img :src="getPlayedSong.track.album.images[0].url" class="cover" />
+        <img src="/public/image/vinyl.png" class="vinyl" />
+        \{{getPlayedSong.track.name}} \{{getPlayedSong.track.album.name}}
+        \{{playState.playedTime.formatted}}
+    </div>
+
+    <div class="grd-2">
+        <ul style="float: left; width: 100%;">
+            <li v-for="track in playlist.queue" v-on:click="playTrack(track.uri)" style="float: left;">
+                <img :src="track.album.images[0].url" width="200"/>
+                \{{track.name}} \{{track.album.name}}
+            </li>
+        </ul>
+    </div>
+
+</section>

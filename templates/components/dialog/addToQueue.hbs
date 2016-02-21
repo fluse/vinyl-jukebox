@@ -1,0 +1,15 @@
+<div class="dialog" v-show="dialog.addToQueue.show">
+
+    <div class="inner">
+        <h3>Lied in die Warteschleife hinzufügen?</h3>
+
+        <span class="btn-cancel" v-on:click="dialogCancle('addToQueue')">
+            abbrechen
+        </span>
+
+        <span class="btn-confirm" v-on:click="dialogConfirm('addToQueue')">
+            hinzufügen
+        </span>
+    </div>
+
+</div>
